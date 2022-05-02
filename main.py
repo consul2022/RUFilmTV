@@ -79,11 +79,13 @@ async def get_movie(callback: CallbackQuery):
 # content_types="text" - считывание запроса пользователя только по тексту
 @dp.message_handler(content_types="text")  # декоратор - добавить функционал к функции
 async def main_buttons_handler(message: Message):
-    if message.text == genres_btn.text:
+    if message.text == genres_btn.text:  # список кнопок
         buttons = ReplyKeyboardMarkup(resize_keyboard=True)
         buttons.add(action_movie_btn, horrors_btn)
         buttons.add(comedies_btn, melodramas_btn)
         buttons.add(cartoons_btn, fantastic_btn)
+        buttons.add(thriller_btn, adventures_btn)
+        buttons.add(drama_btn, history_btn)
         buttons.add(back_to_menu_btn)
         await message.answer(text="Выберете желаем жанр фильма!", reply_markup=buttons)
 

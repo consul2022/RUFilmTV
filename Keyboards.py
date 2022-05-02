@@ -10,5 +10,12 @@ cartoons_btn = KeyboardButton(text="👶 Мультфильмы")
 fantastic_btn = KeyboardButton(text="👽 Фантастика")
 melodramas_btn = KeyboardButton(text="❤ Мелодрамы")
 back_to_menu_btn = KeyboardButton(text="⬅ Назад в меню")
+thriller_btn = KeyboardButton(text="👻 Триллер")
+adventures_btn = KeyboardButton(text="🗺 Приключения")
+drama_btn = KeyboardButton(text="😢 Драма")
+history_btn = KeyboardButton(text="🏛️ История")
 
-watch_movie_btn = InlineKeyboardButton(text="📺 Смотреть трейлер")
+
+
+
+watch_movie_btn = InlineKeyboardButton(text="📺 Смотреть фильм")
