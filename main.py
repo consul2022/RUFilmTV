@@ -15,6 +15,7 @@ from states import *  # хранилище состояний
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext  # содержание состояния state
 from key import *
+from random import shuffle # перемешивает фильмы рондомно
 
 bot = Bot(BOT_TOKEN)
 loop = asyncio.get_event_loop()  # асинхронный цикл

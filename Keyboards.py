@@ -14,7 +14,7 @@ thriller_btn = KeyboardButton(text="👻 Триллер")
 adventures_btn = KeyboardButton(text="🗺 Приключения")
 drama_btn = KeyboardButton(text="😢 Драма")
 history_btn = KeyboardButton(text="🏛️ История")
-
+show_more_btn = KeyboardButton(text="👌 Показать ещё фильмы")
 
 
 
