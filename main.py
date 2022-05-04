@@ -27,6 +27,10 @@ db.connect()
 
 @dp.message_handler(state=Films.by_search)
 async def finding_by_search(message: Message, state: FSMContext):
+    if message.text == genres_btn.text:
+        await state.finish()
+        await main_buttons_handler(message)
+        return
     films = db.select_film_by_name(message.text)
     # print(films)
     if films:
@@ -79,8 +83,10 @@ async def get_movie(callback: CallbackQuery):
 
 # content_types="text" - считывание запроса пользователя только по тексту
 @dp.message_handler(content_types="text")  # декоратор - добавить функционал к функции
-async def main_buttons_handler(message: Message):
+async def main_buttons_handler(message: Message, state : FSMContext):
     if message.text == genres_btn.text:  # список кнопок
+        async with state.proxy() as data:
+            data['films'] = []
         buttons = ReplyKeyboardMarkup(resize_keyboard=True)
         buttons.add(action_movie_btn, horrors_btn)
         buttons.add(comedies_btn, melodramas_btn)
@@ -89,25 +95,6 @@ async def main_buttons_handler(message: Message):
         buttons.add(drama_btn, history_btn)
         buttons.add(back_to_menu_btn)
         await message.answer(text="Выберете желаем жанр фильма!", reply_markup=buttons)
-
-    # elif message.text == cartoons_btn.text:
-    #     await bot.send_video(chat_id=message.from_user.id,
-    #                          video ="BAACAgIAAxkBAANsYl1xcBVMCMdb7Cq49nAg4fTFx8kAAvgTAAKoXOhKVcErsqn-3ZAkBA")
-    # elif message.text == action_movie_btn.text:
-    #     await bot.send_video(chat_id=message.from_user.id,
-    #                          video ="BAACAgIAAxkBAAPBYmFkq15_Ar6V2PMM1l7LM9xQhwkAAtUVAAJ6HRBLDk8SF3aCjUokBA")
-    # elif message.text == comedies_btn.text:
-    #     await bot.send_video(chat_id=message.from_user.id,
-    #                          video = "BAACAgIAAxkBAAOBYl2J55ja71_8rJ1qZSCyfXk-i6QAAjoYAALl4ulKA-L3it2edqIkBA")
-    # elif message.text == horrors_btn.text:
-    #     await bot.send_video(chat_id=message.from_user.id,
-    #                          video = "BAACAgIAAxkBAAP8YmK5w12y17uFOAL3i9h-alox_J0AAqYXAALNdxhLqP0aycv6xVQkBA")
-    # elif message.text == fantastic_btn.text:
-    #     await bot.send_video(chat_id=message.from_user.id,
-    #                          video = "BAACAgIAAxkBAAP7YmK4rKXXy2d4feRm9yB_ZzHaQ4oAAqwbAAIdHhFL5ghWrMD9AS4kBA")
-    # elif message.text == melodramas_btn.text:
-    #     await bot.send_video(chat_id=message.from_user.id,
-    #                          video = "BAACAgIAAxkBAAIBL2Jiv-IXhZ7NJ8FqzAPqHLJ4gPaOAAK7GwACHR4RSzN6EFkHN_DWJAQ")
     elif message.text == search_btn.text:
         await bot.send_message(chat_id=message.from_user.id, text="Введите название фильма")
         await Films.by_search.set()
@@ -116,19 +103,31 @@ async def main_buttons_handler(message: Message):
         buttons.add(genres_btn, search_btn)
         await message.answer(text="Вы вернулись в главное меню!", reply_markup=buttons)
     else:
-        # смайлик Мелодраммы
-        films = db.select_film_by_genre(message.text.split()[1][:-1])
-        for film in films:
-            await bot.send_photo(chat_id=message.from_user.id, photo=film[0])
+        data = await state.get_data()
+        print(message.text)
+        if data['films']:
+            films = data['films']
+        else:
+            films = db.select_film_by_genre(message.text.split()[1][:-1])
+        shuffle(films)
+        for film in films[:3]:
+            buttons_one = ReplyKeyboardMarkup(resize_keyboard=True)
+            if len(films[3:]) < 3:
+                buttons_one.add(genres_btn)
+            else:
+                buttons_one.add(show_more_btn, genres_btn)
+            await bot.send_photo(chat_id=message.from_user.id, photo=film[0], reply_markup=buttons_one)
             buttons = InlineKeyboardMarkup()
             watch_movie_btn.callback_data = f"Video|{film[4]}"
             buttons.add(watch_movie_btn)
 
-            await bot.send_message(chat_id=message.from_user.id, text=f"""*Название:* {film[1].capitalize()}
+            await bot.send_message(chat_id=message.from_user.id, text=f"""*Название:* {film[1].capitalize()} {film[5]}
 
 *Жанр:* {film[2]}
 
 *Описание:* {film[3]}""", parse_mode="Markdown", reply_markup=buttons)  # управление шрифтами (* _ !)
+        async with state.proxy() as data_insert:
+            data_insert['films'] = films[3:]
 
 
 executor.start_polling(dp)

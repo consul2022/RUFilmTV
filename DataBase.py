@@ -14,7 +14,7 @@ class DataBase:
 
     def select_film_by_genre(self, genre):
         requests_genre = self.cur.execute(
-            f"SELECT Poster, Name, Genre, Description, id FROM Films WHERE Genre LIKE '%{genre}%'").fetchall()
+            f"SELECT Poster, Name, Genre, Description, id, Year FROM Films WHERE Genre LIKE '%{genre}%'").fetchall()
         return requests_genre
 
     def select_video_by_id(self, id):
