@@ -29,7 +29,7 @@ db.connect()
 async def finding_by_search(message: Message, state: FSMContext):
     if message.text == genres_btn.text:
         await state.finish()
-        await main_buttons_handler(message)
+        await main_buttons_handler(message,state)
         return
     films = db.select_film_by_name(message.text)
     # print(films)
@@ -102,7 +102,7 @@ async def main_buttons_handler(message: Message, state : FSMContext):
         buttons = ReplyKeyboardMarkup(resize_keyboard=True)
         buttons.add(genres_btn, search_btn)
         await message.answer(text="Вы вернулись в главное меню!", reply_markup=buttons)
-    else:
+    elif message.text in Keyboards.text_buttons:
         data = await state.get_data()
         print(message.text)
         if data['films']:
