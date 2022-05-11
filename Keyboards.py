@@ -19,3 +19,17 @@ show_more_btn = KeyboardButton(text="👌 Показать ещё фильмы")
 
 
 watch_movie_btn = InlineKeyboardButton(text="📺 Смотреть фильм")
+
+
+text_buttons = [action_movie_btn.text,
+                comedies_btn.text,
+                horrors_btn.text,
+                cartoons_btn.text,
+                fantastic_btn.text,
+                melodramas_btn.text,
+                back_to_menu_btn.text,
+                thriller_btn.text,
+                adventures_btn.text,
+                drama_btn.text,
+                history_btn.text,
+                show_more_btn.text]
