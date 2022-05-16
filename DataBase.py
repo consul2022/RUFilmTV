@@ -9,7 +9,7 @@ class DataBase:
 
     def select_film_by_name(self, name):
         requests = self.cur.execute(
-            f"SELECT Poster, Name, Genre, Description, Video FROM Films WHERE Name LIKE '%{name.lower()}%'").fetchall()
+            f"SELECT Poster, Name, Genre, Description, Video FROM Films WHERE Name LIKE '%{name.lower()}%'").fetchall() # [(), ()]
         return requests
 
     def select_film_by_genre(self, genre):

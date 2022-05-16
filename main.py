@@ -4,7 +4,6 @@ from aiogram import Bot, Dispatcher, executor
 # Bot - взаимосвязь бота в телеграмме с питоном
 # Dispatcher - связка между различным функионалом и ботом
 # executor - исполнитель (выполняет работу программы)
-import Keyboards
 
 '''Подключение типов, которые будут применены в боте'''
 import asyncio  # библиотка для работы с асинхронным програмированием
@@ -23,6 +22,25 @@ dp = Dispatcher(bot, loop, storage=MemoryStorage())
 
 db = DataBase()
 db.connect()
+
+
+@dp.callback_query_handler(state=Films.by_search)
+async def name_film(callback : CallbackQuery, state: FSMContext):
+    films = db.select_film_by_name(callback.data)
+    # print(films)
+    if films:
+        for film in films:
+            await bot.send_photo(chat_id=callback.message.chat.id, photo=film[0])
+            await bot.send_message(chat_id=callback.message.chat.id, text=
+            f"""*Название:* {film[1].capitalize()}
+
+*Жанр:* {film[2]}
+
+*Описание:* {film[3]}""", parse_mode="Markdown")
+            await bot.send_video(chat_id=callback.message.chat.id,
+                                 video=film[4])
+
+            await state.finish()
 
 
 @dp.message_handler(state=Films.by_search)
@@ -58,7 +76,15 @@ async def finding_by_search(message: Message, state: FSMContext):
 
         await state.finish()
     else:
-        await message.answer(text="Ничего не найдено, попробуйте ещё раз ")
+        possible_films = db.select_possible_films(message.text)
+        if possible_films:
+            buttons = InlineKeyboardMarkup()
+            for name_films in possible_films:
+                buttons.add(InlineKeyboardButton(text=name_films.capitalize(), callback_data=name_films))
+            await message.answer(text="Возможно вы имели ввиду ⬇ ",reply_markup=buttons )
+        else:
+            await message.answer(text="Ничего не найдено, попробуйте ещё раз ")
+
 
 
 @dp.message_handler(commands="start")
@@ -102,7 +128,7 @@ async def main_buttons_handler(message: Message, state : FSMContext):
         buttons = ReplyKeyboardMarkup(resize_keyboard=True)
         buttons.add(genres_btn, search_btn)
         await message.answer(text="Вы вернулись в главное меню!", reply_markup=buttons)
-    elif message.text in Keyboards.text_buttons:
+    elif message.text in text_buttons:
         data = await state.get_data()
         print(message.text)
         if data['films']:
