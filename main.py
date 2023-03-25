@@ -155,5 +155,7 @@ async def main_buttons_handler(message: Message, state : FSMContext):
         async with state.proxy() as data_insert:
             data_insert['films'] = films[3:]
 
+@dp.message_handler(content_types="text")
+def getvideoid(message: Message, state : FSMContext):
 
 executor.start_polling(dp)
