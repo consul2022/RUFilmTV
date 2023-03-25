@@ -14,7 +14,7 @@ from states import *  # хранилище состояний
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext  # содержание состояния state
 from key import *
-from random import shuffle # перемешивает фильмы рондомно
+from random import shuffle  # перемешивает фильмы рондомно
 
 bot = Bot(BOT_TOKEN)
 loop = asyncio.get_event_loop()  # асинхронный цикл
@@ -25,7 +25,7 @@ db.connect()
 
 
 @dp.callback_query_handler(state=Films.by_search)
-async def name_film(callback : CallbackQuery, state: FSMContext):
+async def name_film(callback: CallbackQuery, state: FSMContext):
     films = db.select_film_by_name(callback.data)
     # print(films)
     if films:
@@ -47,7 +47,7 @@ async def name_film(callback : CallbackQuery, state: FSMContext):
 async def finding_by_search(message: Message, state: FSMContext):
     if message.text == genres_btn.text:
         await state.finish()
-        await main_buttons_handler(message,state)
+        await main_buttons_handler(message, state)
         return
     films = db.select_film_by_name(message.text)
     # print(films)
@@ -81,22 +81,42 @@ async def finding_by_search(message: Message, state: FSMContext):
             buttons = InlineKeyboardMarkup()
             for name_films in possible_films:
                 buttons.add(InlineKeyboardButton(text=name_films.capitalize(), callback_data=name_films))
-            await message.answer(text="Возможно вы имели ввиду ⬇ ",reply_markup=buttons )
+            await message.answer(text="Возможно вы имели ввиду ⬇ ", reply_markup=buttons)
         else:
             await message.answer(text="Ничего не найдено, попробуйте ещё раз ")
 
 
-
 @dp.message_handler(commands="start")
-async def start_handler(message: Message):
+async def start_handler(message: Message, state: FSMContext):
     buttons = ReplyKeyboardMarkup(resize_keyboard=True)
     buttons.add(genres_btn, search_btn)
 
     await message.answer(
         text="Добро пожаловать в RUFilmTV, здесь Вы сможете найти фильм по жанру или в поисковике, на любой вкус. Приятного просмотра!",
         reply_markup=buttons)
+    await state.finish()
+
+@dp.message_handler(commands="video")
+async def get_video_id(message: Message):
+    await message.answer("Скинь видео")
+    await Films.load_video.set()
 
 
+@dp.message_handler(content_types="video",state=Films.load_video)
+async def set_video_id(message: Message, state: FSMContext):
+    await message.answer(message.video.file_id)
+    await state.finish()
+
+@dp.message_handler(commands="photo")
+async def get_video_id(message: Message):
+    await message.answer("Скинь фото")
+    await Films.load_photo.set()
+
+
+@dp.message_handler(content_types="photo",state=Films.load_photo)
+async def set_video_id(message: Message, state: FSMContext):
+    await message.answer(message.photo[-1].file_id)
+    await state.finish()
 @dp.callback_query_handler()
 async def get_movie(callback: CallbackQuery):
     # ["Video", "1"]
@@ -109,7 +129,7 @@ async def get_movie(callback: CallbackQuery):
 
 # content_types="text" - считывание запроса пользователя только по тексту
 @dp.message_handler(content_types="text")  # декоратор - добавить функционал к функции
-async def main_buttons_handler(message: Message, state : FSMContext):
+async def main_buttons_handler(message: Message, state: FSMContext):
     if message.text == genres_btn.text:  # список кнопок
         async with state.proxy() as data:
             data['films'] = []
@@ -154,8 +174,5 @@ async def main_buttons_handler(message: Message, state : FSMContext):
 *Описание:* {film[3]}""", parse_mode="Markdown", reply_markup=buttons)  # управление шрифтами (* _ !)
         async with state.proxy() as data_insert:
             data_insert['films'] = films[3:]
-
-@dp.message_handler(content_types="text")
-def getvideoid(message: Message, state : FSMContext):
 
 executor.start_polling(dp)
